@@ -124,7 +124,7 @@ export const FlightInspectorCard: React.FC = () => {
 
       {/* View Domino Chain Button */}
       <button
-        onClick={() => setActiveNavTab('network')}
+        onClick={() => setActiveNavTab('insights')}
         className="w-full py-2 px-3 rounded-lg bg-[#141924] hover:bg-[#1B2232] border border-[#242E40] text-zinc-200 text-xs font-medium flex items-center justify-between transition mt-2"
       >
         <div className="flex items-center space-x-2">

@@ -12,6 +12,16 @@ interface SimulationState {
   activeNavTab: 'operations' | 'network' | 'recovery' | 'insights';
   setActiveNavTab: (tab: 'operations' | 'network' | 'recovery' | 'insights') => void;
 
+  // MiniDock / Side Dock State
+  activeDockItem: 'operations' | 'network' | 'gantt' | 'weather' | 'recovery' | 'settings';
+  setActiveDockItem: (item: 'operations' | 'network' | 'gantt' | 'weather' | 'recovery' | 'settings') => void;
+
+  // Modals & Overlays
+  isSettingsOpen: boolean;
+  setIsSettingsOpen: (open: boolean) => void;
+  isWeatherOverlayActive: boolean;
+  setIsWeatherOverlayActive: (active: boolean) => void;
+
   // Scenario Config
   closureAirport: string | null;
   closureStartStr: string;
@@ -72,6 +82,22 @@ export const useSimulationStore = create<SimulationState>((set, get) => {
   return {
     activeNavTab: 'operations',
     setActiveNavTab: (tab) => set({ activeNavTab: tab }),
+
+    activeDockItem: 'operations',
+    setActiveDockItem: (item) => {
+      set({ activeDockItem: item });
+      if (item === 'operations') set({ activeNavTab: 'operations' });
+      else if (item === 'network') set({ activeNavTab: 'network' });
+      else if (item === 'recovery') set({ activeNavTab: 'recovery' });
+      else if (item === 'settings') set({ isSettingsOpen: true });
+      else if (item === 'weather') set({ isWeatherOverlayActive: true });
+    },
+
+    isSettingsOpen: false,
+    setIsSettingsOpen: (open) => set({ isSettingsOpen: open }),
+
+    isWeatherOverlayActive: false,
+    setIsWeatherOverlayActive: (active) => set({ isWeatherOverlayActive: active }),
 
     closureAirport: 'BOM',
     closureStartStr: '08:00',

@@ -1,42 +1,77 @@
 import React from 'react';
+import { useSimulationStore } from './store/useSimulationStore';
 import { Header } from './components/Header';
 import { KpiStrip } from './components/KpiStrip';
 import { MiniDock } from './components/MiniDock';
-import { FleetAndAlerts } from './components/FleetAndAlerts';
-import { AirspaceView } from './components/globe/AirspaceView';
-import { FlightScheduleAndRecovery } from './components/FlightScheduleAndRecovery';
-import { GanttTimeline } from './components/GanttTimeline';
+import { SimulateDisruptionPanel } from './components/SimulateDisruptionPanel';
+import { NightGlobeView } from './components/globe/NightGlobeView';
+import { FlightInspectorCard } from './components/FlightInspectorCard';
+import { MilestoneTimeline } from './components/MilestoneTimeline';
+import { NetworkView } from './components/views/NetworkView';
+import { RecoveryView } from './components/views/RecoveryView';
+import { InsightsView } from './components/views/InsightsView';
 import { JudgeTourModal } from './components/JudgeTourModal';
+import { SettingsModal } from './components/SettingsModal';
+import { WeatherModal } from './components/WeatherModal';
 
 export const App: React.FC = () => {
+  const { activeNavTab } = useSimulationStore();
+
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-black text-gray-100 font-sans">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-black text-gray-100 font-sans select-none">
       {/* 1. Global Navigation Header */}
       <Header />
 
-      {/* 2. Real-time KPI Statistics Strip */}
-      <KpiStrip />
-
-      {/* 3. Main Operational Command Center */}
+      {/* 2. Main Workspace Layout */}
       <div className="flex-1 flex overflow-hidden relative">
-        {/* Left Mini Dock */}
+        {/* Left Side Icon Dock */}
         <MiniDock />
 
-        {/* Fleet Availability Donut Charts & Disruption Console */}
-        <FleetAndAlerts />
+        {/* Dynamic View Switcher */}
+        {activeNavTab === 'operations' && (
+          <div className="flex-1 flex flex-col overflow-hidden relative bg-black">
+            {/* Real-time KPI Statistics Strip matching screenshot */}
+            <KpiStrip />
 
-        {/* Center: Real-Time Airspace Monitor (Photorealistic Dark Satellite Map) */}
-        <AirspaceView />
+            {/* Center Command Area: Left Disruption Panel + Center Globe + Right Flight Card */}
+            <div className="flex-1 flex overflow-hidden relative">
+              {/* Left: Disruption Simulator Panel */}
+              <div className="absolute left-0 top-0 bottom-0 z-20 pointer-events-auto">
+                <SimulateDisruptionPanel />
+              </div>
 
-        {/* Right: Live Flight Schedule Table & AI Dispatcher Recovery Matrix */}
-        <FlightScheduleAndRecovery />
+              {/* Center: High-Fidelity 3D Night Globe View (India Prominent) */}
+              <div className="absolute inset-0 z-10">
+                <NightGlobeView />
+              </div>
+
+              {/* Right: Flight Inspector Card */}
+              <div className="absolute right-6 top-4 z-20 pointer-events-auto">
+                <FlightInspectorCard />
+              </div>
+            </div>
+
+            {/* Bottom: Milestone Playback Timeline */}
+            <div className="border-t border-[#1A2230] bg-[#0A0D14]/90 backdrop-blur-md">
+              <MilestoneTimeline />
+            </div>
+          </div>
+        )}
+
+        {/* View 2: Network Operations & Airspace Radar */}
+        {activeNavTab === 'network' && <NetworkView />}
+
+        {/* View 3: AI Dispatcher Recovery & 24h Rotation Gantt */}
+        {activeNavTab === 'recovery' && <RecoveryView />}
+
+        {/* View 4: Domino DNA & Executive Insights */}
+        {activeNavTab === 'insights' && <InsightsView />}
       </div>
 
-      {/* 4. Bottom: Timeline & Resource Allocation Gantt Chart */}
-      <GanttTimeline />
-
-      {/* 5. Floating Interactive Tour for Judges */}
+      {/* 3. Global Interactive Modals */}
       <JudgeTourModal />
+      <SettingsModal />
+      <WeatherModal />
     </div>
   );
 };

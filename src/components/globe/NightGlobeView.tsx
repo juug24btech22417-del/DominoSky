@@ -16,20 +16,23 @@ function latLngToVector3(lat: number, lng: number, radius: number): THREE.Vector
 }
 
 // 3D Curved Quadratic Bézier Arc over the Earth sphere
-function createGeodesicArc(v1: THREE.Vector3, v2: THREE.Vector3, altitudeMultiplier: number = 1.12): THREE.Vector3[] {
+function createGeodesicArc(v1: THREE.Vector3, v2: THREE.Vector3, altitudeMultiplier: number = 1.08): { points: THREE.Vector3[]; p0: THREE.Vector3; p1: THREE.Vector3; p2: THREE.Vector3 } {
   const distance = v1.distanceTo(v2);
   const mid = new THREE.Vector3().addVectors(v1, v2).multiplyScalar(0.5);
   const midLength = mid.length();
-  // Elevate midpoint above sphere based on distance between hubs
-  mid.normalize().multiplyScalar(midLength * altitudeMultiplier + distance * 0.08);
+  mid.normalize().multiplyScalar(midLength * altitudeMultiplier + distance * 0.07);
 
   const curve = new THREE.QuadraticBezierCurve3(v1, mid, v2);
-  return curve.getPoints(40);
+  return {
+    points: curve.getPoints(50),
+    p0: v1,
+    p1: mid,
+    p2: v2
+  };
 }
 
 export const NightGlobeView: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const overlayRef = useRef<HTMLDivElement>(null);
 
   const {
     activeOutput,
@@ -45,9 +48,8 @@ export const NightGlobeView: React.FC = () => {
   const isDraggingRef = useRef(false);
   const prevMouseRef = useRef({ x: 0, y: 0 });
 
-  // 2D Screen projected positions for interactive airport tags
+  // 2D Screen projected positions for interactive airport labels
   const [screenLabels, setScreenLabels] = useState<Array<{ id: string; x: number; y: number; isVisible: boolean; isClosed: boolean }>>([]);
-
   const apVecMapRef = useRef<Map<string, THREE.Vector3>>(new Map());
 
   // 1. Initialize High-End 3D Earth Globe Scene
@@ -59,15 +61,14 @@ export const NightGlobeView: React.FC = () => {
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 1000);
-    // Camera positioned to view India prominently
-    camera.position.set(0, 22, 148);
+    camera.position.set(0, 0, 145);
     cameraRef.current = camera;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
+    renderer.toneMappingExposure = 1.25;
     rendererRef.current = renderer;
 
     containerRef.current.innerHTML = '';
@@ -77,14 +78,14 @@ export const NightGlobeView: React.FC = () => {
     globeGroupRef.current = globeGroup;
     scene.add(globeGroup);
 
-    // Initial rotation: Rotate globe so India (lat 20N, lng 78E) is facing the camera directly!
-    // Since India is at z ~ -90, rotating 180 deg around Y brings it facing the camera (+Z)
-    globeGroup.rotation.y = Math.PI - 0.28;
-    globeGroup.rotation.x = 0.26;
+    // Calibrated position & orientation to center the Indian Subcontinent
+    globeGroup.position.set(4, -4, 0);
+    globeGroup.rotation.y = Math.PI + Math.atan2(8.96, 45.94) + 0.04; // ~3.37 rad
+    globeGroup.rotation.x = -0.10;
 
-    const radius = 54;
+    const radius = 62;
 
-    // A. NASA Earth Night Texture (City Lights across India & Earth)
+    // A. NASA Earth Night Texture with Golden City Lights
     const textureLoader = new THREE.TextureLoader();
     const nightTexture = textureLoader.load('/earth-night.jpg');
     nightTexture.colorSpace = THREE.SRGBColorSpace;
@@ -93,34 +94,34 @@ export const NightGlobeView: React.FC = () => {
     const earthMat = new THREE.MeshPhongMaterial({
       map: nightTexture,
       emissiveMap: nightTexture,
-      emissive: new THREE.Color(0xffd580), // Warm golden city lights glow
-      emissiveIntensity: 0.85,
-      specular: new THREE.Color(0x223344),
-      shininess: 12
+      emissive: new THREE.Color(0xffdf99), // Warm golden city lights glow
+      emissiveIntensity: 0.95,
+      specular: new THREE.Color(0x334466),
+      shininess: 15
     });
     const earthMesh = new THREE.Mesh(earthGeo, earthMat);
     globeGroup.add(earthMesh);
 
     // B. Atmospheric Blue Rim Glow (Outer Shell)
-    const atmosGeo = new THREE.SphereGeometry(radius + 2.8, 40, 40);
+    const atmosGeo = new THREE.SphereGeometry(radius + 2.6, 48, 48);
     const atmosMat = new THREE.MeshBasicMaterial({
       color: 0x38bdf8,
       transparent: true,
-      opacity: 0.14,
+      opacity: 0.16,
       side: THREE.BackSide
     });
     const atmosMesh = new THREE.Mesh(atmosGeo, atmosMat);
     globeGroup.add(atmosMesh);
 
-    // C. Scene Lighting
-    const ambLight = new THREE.AmbientLight(0xffffff, 1.2);
+    // C. Scene Lighting (Orbital sunlight + ambient)
+    const ambLight = new THREE.AmbientLight(0xffffff, 1.4);
     scene.add(ambLight);
 
-    const sunLight = new THREE.DirectionalLight(0x60a5fa, 1.5);
-    sunLight.position.set(-80, 60, 100);
+    const sunLight = new THREE.DirectionalLight(0x7dd3fc, 1.8);
+    sunLight.position.set(-90, 70, 110);
     scene.add(sunLight);
 
-    // Cache 3D vectors for all 16 Indian airports
+    // Cache 3D vectors for all Indian airports
     DATASET.airports.forEach(a => {
       apVecMapRef.current.set(a.id, latLngToVector3(a.lat, a.lng, radius + 0.4));
     });
@@ -130,12 +131,12 @@ export const NightGlobeView: React.FC = () => {
     const animate = () => {
       animId = requestAnimationFrame(animate);
 
-      // Gentle ambient drift if user is not dragging
+      // Subtle ambient drift when not dragging
       if (!isDraggingRef.current && globeGroupRef.current) {
-        globeGroupRef.current.rotation.y += 0.00012;
+        globeGroupRef.current.rotation.y += 0.00010;
       }
 
-      // Project 3D airport positions to 2D screen coordinates for crisp HTML labels
+      // Project 3D airport positions to 2D screen coordinates for sharp HTML labels
       if (globeGroupRef.current && cameraRef.current && containerRef.current) {
         const w = containerRef.current.clientWidth;
         const h = containerRef.current.clientHeight;
@@ -145,15 +146,12 @@ export const NightGlobeView: React.FC = () => {
           const localVec = apVecMapRef.current.get(ap.id);
           if (!localVec) return;
 
-          // Convert to world space
           const worldVec = localVec.clone().applyMatrix4(globeGroupRef.current!.matrixWorld);
-
-          // Dot product with camera vector to check if airport is facing front
           const camDir = cameraRef.current!.position.clone().sub(worldVec).normalize();
           const normal = worldVec.clone().normalize();
           const dot = normal.dot(camDir);
 
-          if (dot > 0.15) { // Facing front
+          if (dot > 0.18) {
             const projected = worldVec.clone().project(cameraRef.current!);
             const sx = (projected.x * 0.5 + 0.5) * w;
             const sy = (-(projected.y * 0.5) + 0.5) * h;
@@ -183,10 +181,10 @@ export const NightGlobeView: React.FC = () => {
       if (!isDraggingRef.current || !globeGroupRef.current) return;
       const dx = e.clientX - prevMouseRef.current.x;
       const dy = e.clientY - prevMouseRef.current.y;
-      globeGroupRef.current.rotation.y += dx * 0.0035;
+      globeGroupRef.current.rotation.y += dx * 0.003;
       globeGroupRef.current.rotation.x = Math.max(
         -Math.PI / 4,
-        Math.min(Math.PI / 4, globeGroupRef.current.rotation.x + dy * 0.0035)
+        Math.min(Math.PI / 4, globeGroupRef.current.rotation.x + dy * 0.003)
       );
       prevMouseRef.current = { x: e.clientX, y: e.clientY };
     };
@@ -217,7 +215,7 @@ export const NightGlobeView: React.FC = () => {
     };
   }, []);
 
-  // 2. Render Flight Arcs, Moving Planes, & Pulsing BOM Beacon on the Globe
+  // 2. Render Flight Arcs, Butter-Smooth Airplanes & Pulsing Red BOM Beacon
   useEffect(() => {
     if (!globeGroupRef.current) return;
     const group = globeGroupRef.current;
@@ -237,21 +235,21 @@ export const NightGlobeView: React.FC = () => {
     if (closureAirport && apVecs.has(closureAirport)) {
       const v = apVecs.get(closureAirport)!;
 
-      // Multi-tier glowing beacon rings
-      for (let r = 1.0; r <= 3.8; r += 1.2) {
-        const ringGeo = new THREE.RingGeometry(r, r + 0.45, 24);
+      // 3 Concentric Glowing Rings
+      [1.2, 2.4, 3.8].forEach((r, idx) => {
+        const ringGeo = new THREE.RingGeometry(r, r + 0.45, 32);
         const ringMat = new THREE.MeshBasicMaterial({
           color: 0xef4444,
           side: THREE.DoubleSide,
           transparent: true,
-          opacity: 0.85 - (r / 4) * 0.6
+          opacity: 0.9 - idx * 0.25
         });
         const ring = new THREE.Mesh(ringGeo, ringMat);
         ring.position.copy(v);
         ring.lookAt(new THREE.Vector3(0, 0, 0));
         ring.userData = { isFlightLayer: true };
         group.add(ring);
-      }
+      });
     }
 
     // B. Airport Spherical Pin Dots
@@ -260,7 +258,7 @@ export const NightGlobeView: React.FC = () => {
       if (!v) return;
 
       const isClosed = ap.id === closureAirport;
-      const dotGeo = new THREE.SphereGeometry(isClosed ? 1.2 : 0.7, 16, 16);
+      const dotGeo = new THREE.SphereGeometry(isClosed ? 1.4 : 0.8, 16, 16);
       const dotMat = new THREE.MeshBasicMaterial({
         color: isClosed ? 0xef4444 : 0xffffff
       });
@@ -270,13 +268,13 @@ export const NightGlobeView: React.FC = () => {
       group.add(dot);
     });
 
-    // C. 3D Flight Arcs (Cyan, Amber, Dashed Red)
+    // C. 3D Flight Arcs & Moving Airplanes
     Object.values(activeOutput.flights).forEach(flight => {
       const v1 = apVecs.get(flight.origin);
       const v2 = apVecs.get(flight.destination);
       if (!v1 || !v2) return;
 
-      const arcPoints = createGeodesicArc(v1, v2, 1.10);
+      const { points: arcPoints, p0, p1, p2 } = createGeodesicArc(v1, v2, 1.08);
       const geom = new THREE.BufferGeometry().setFromPoints(arcPoints);
 
       let arcColor = 0x22d3ee; // Cyan for On Time
@@ -309,32 +307,54 @@ export const NightGlobeView: React.FC = () => {
       line.userData = { isFlightLayer: true, flightId: flight.flight_id };
       group.add(line);
 
-      // D. Moving Airplanes along the 3D Arcs with Nose Forward Alignment
+      // D. Butter-Smooth Airplanes Moving along the 3D Arc
       if (!flight.is_cancelled) {
         const dep = flight.actual_dep_min;
         const arr = flight.actual_arr_min;
 
         if (currentTimeMin >= dep && currentTimeMin <= arr) {
-          const prog = Math.max(0, Math.min(1, (currentTimeMin - dep) / (arr - dep)));
-          const idx = Math.min(arcPoints.length - 1, Math.max(0, Math.floor(prog * (arcPoints.length - 1))));
-          const pPos = arcPoints[idx];
+          const t = Math.max(0, Math.min(1, (currentTimeMin - dep) / (arr - dep)));
 
-          // 3D Airplane Jet Silhouette
-          const planeGeo = new THREE.ConeGeometry(0.7, 2.0, 5);
-          const planeMat = new THREE.MeshBasicMaterial({
+          // Analytical position on quadratic Bézier curve: B(t) = (1-t)^2 P0 + 2(1-t)t P1 + t^2 P2
+          const pos = new THREE.Vector3()
+            .addScaledVector(p0, (1 - t) * (1 - t))
+            .addScaledVector(p1, 2 * (1 - t) * t)
+            .addScaledVector(p2, t * t);
+
+          // Analytical forward tangent: B'(t) = 2(1-t)(P1 - P0) + 2t(P2 - P1)
+          const tangent = new THREE.Vector3()
+            .addScaledVector(new THREE.Vector3().subVectors(p1, p0), 2 * (1 - t))
+            .addScaledVector(new THREE.Vector3().subVectors(p2, p1), 2 * t)
+            .normalize();
+
+          // 3D Airplane Model: Sleek Delta Jet
+          const airplaneGroup = new THREE.Group();
+          airplaneGroup.position.copy(pos);
+
+          // Fuselage cone
+          const coneGeo = new THREE.ConeGeometry(0.75, 2.2, 8);
+          const coneMat = new THREE.MeshBasicMaterial({
             color: flight.dep_delay > 0 ? 0xf59e0b : 0x22d3ee
           });
-          const plane = new THREE.Mesh(planeGeo, planeMat);
-          plane.position.copy(pPos);
+          const cone = new THREE.Mesh(coneGeo, coneMat);
+          cone.rotation.x = Math.PI / 2; // Orient along Z
+          airplaneGroup.add(cone);
 
-          // Rotate plane so nose points ahead along the arc
-          if (idx < arcPoints.length - 1) {
-            plane.lookAt(arcPoints[idx + 1]);
-            plane.rotateX(Math.PI / 2);
-          }
+          // Wings
+          const wingGeo = new THREE.BoxGeometry(2.4, 0.15, 0.8);
+          const wingMat = new THREE.MeshBasicMaterial({
+            color: flight.dep_delay > 0 ? 0xd97706 : 0x06b6d4
+          });
+          const wing = new THREE.Mesh(wingGeo, wingMat);
+          wing.position.set(0, 0, -0.4);
+          airplaneGroup.add(wing);
 
-          plane.userData = { isFlightLayer: true, flightId: flight.flight_id };
-          group.add(plane);
+          // Smooth orientation along the tangent vector with ZERO wobble
+          const targetPoint = pos.clone().add(tangent);
+          airplaneGroup.lookAt(targetPoint);
+
+          airplaneGroup.userData = { isFlightLayer: true, flightId: flight.flight_id };
+          group.add(airplaneGroup);
         }
       }
     });
@@ -345,8 +365,8 @@ export const NightGlobeView: React.FC = () => {
       {/* 3D WebGL Canvas */}
       <div ref={containerRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
 
-      {/* Floating 2D Screen-Projected Airport Code Labels (DEL, BOM, BLR, CCU) */}
-      <div ref={overlayRef} className="absolute inset-0 pointer-events-none">
+      {/* Floating 2D Screen-Projected Airport Labels */}
+      <div className="absolute inset-0 pointer-events-none">
         {screenLabels.map(lbl => (
           <div
             key={lbl.id}
@@ -355,7 +375,7 @@ export const NightGlobeView: React.FC = () => {
             }}
             className="absolute transition-all duration-75 pointer-events-none"
           >
-            <span className={`text-[10px] font-bold font-mono-numbers px-1 rounded ${
+            <span className={`text-[10px] font-bold font-mono-numbers px-1.5 py-0.5 rounded ${
               lbl.isClosed
                 ? 'text-rose-400 bg-rose-950/80 border border-rose-800 shadow-[0_0_8px_#FF0000]'
                 : 'text-zinc-200 drop-shadow-[0_0_4px_#000000]'
