@@ -9,34 +9,71 @@ import {
   CausalStep
 } from '../types';
 
+/** Typed dataset singleton loaded from domino_dataset.json. */
 export const DATASET: Dataset = rawData as Dataset;
 
+/**
+ * Converts an "HH:MM" time string to absolute minutes elapsed since midnight.
+ * @param hhmm - Time string in "HH:MM" 24-hour format (e.g. "08:30").
+ * @returns Total minutes since midnight (e.g. 510 for "08:30").
+ */
 export function toMinutes(hhmm: string): number {
   const [h, m] = hhmm.split(':').map(Number);
   return h * 60 + m;
 }
 
+/**
+ * Converts absolute minutes since midnight back to an "HH:MM" string.
+ * Values ≥ 1440 are expressed as "24:30", "25:00", etc. (late-night flights).
+ * @param totalMinutes - Non-negative integer minute count.
+ * @returns Formatted time string, e.g. "08:30" or "24:10".
+ */
 export function toHHMM(totalMinutes: number): string {
-  // Normalize within 24h or keep past 24:00 if late night
   const normalized = Math.max(0, totalMinutes);
   const h = Math.floor(normalized / 60);
   const m = Math.floor(normalized % 60);
   return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
 }
 
+/**
+ * Input parameters for a single simulation run.
+ * Pass `closureAirport: null` to model the nominal (no-disruption) schedule.
+ */
 export interface SimulationParams {
+  /** IATA code of the closed airport, or null for a nominal run. */
   closureAirport: string | null;
-  closureStartStr: string; // "09:00"
-  closureDurationMinutes: number; // 90
+  /** Closure start time in "HH:MM" format (IST). */
+  closureStartStr: string;
+  /** How long the closure lasts, in minutes (0 = no-op). */
+  closureDurationMinutes: number;
+  /** Optional tactical overrides that model AI recovery interventions. */
   overrideModifications?: {
+    /** Flight IDs to cancel outright (strategic cancellation). */
     cancelledFlightIds?: string[];
+    /** Spare aircraft to inject, breaking the inbound tail dependency. */
     spareAircraftSwaps?: Array<{
+      /** The delayed flight that receives the spare aircraft. */
       targetFlightId: string;
-      spareTailId: string; // "VT-DS17" (at BLR) or "VT-DS18" (at DEL)
+      /** Tail number of the spare, e.g. "VT-DS17" (BLR) or "VT-DS18" (DEL). */
+      spareTailId: string;
     }>;
   };
 }
 
+/**
+ * Runs the deterministic aviation disruption simulation engine.
+ *
+ * The engine models three coupled cascades in a single O(F) pass:
+ *  1. **Aircraft rotation propagation** – late inbound tail → late outbound departure.
+ *  2. **Crew FDTL (DGCA) violation detection** – duty time overflow on delayed rosters.
+ *  3. **Passenger connection breakage** – misconnects when slack drops below MCT.
+ *
+ * All outputs are mathematically exact; there is no randomness or AI inference.
+ *
+ * @param params - Closure scenario and optional recovery overrides.
+ * @returns A fully computed {@link SimulationOutput} with per-flight, per-crew,
+ *   and per-connection results plus aggregate KPIs.
+ */
 export function runSimulation(params: SimulationParams): SimulationOutput {
   const {
     closureAirport,

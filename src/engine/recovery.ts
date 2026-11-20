@@ -1,6 +1,22 @@
 import { SimulationParams, runSimulation } from './simulator';
 import { SimulationOutput, RecoveryAction } from '../types';
 
+/**
+ * Evaluates all viable AI recovery strategies for the given disruption baseline.
+ *
+ * Each strategy is modelled by re-running the full simulation with a tactical
+ * override (spare injection, strategic cancellation, or schedule retime) and
+ * computing the delta against the baseline — so savings figures are always
+ * mathematically grounded, not estimated.
+ *
+ * Recovery options are returned sorted by `delay_minutes_saved` descending so
+ * the UI always shows the highest-impact action first.
+ *
+ * @param baselineParams - The same params used to produce `baselineOutput`.
+ * @param baselineOutput - The unmodified (pre-recovery) simulation result.
+ * @returns An array of {@link RecoveryAction} objects, empty when the network
+ *   is nominal (no delays and no stranded passengers).
+ */
 export function evaluateRecoveryOptions(
   baselineParams: SimulationParams,
   baselineOutput: SimulationOutput

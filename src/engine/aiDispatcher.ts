@@ -1,13 +1,33 @@
 import { SimulationOutput, RecoveryAction } from '../types';
 
+/**
+ * Structured briefing object produced by the AI Dispatcher for the operations
+ * team. All strings are human-readable and safe to surface directly in the UI.
+ */
 export interface DispatcherBriefing {
+  /** High-level overview of current network status and total financial exposure. */
   executiveSummary: string;
+  /** Root-cause analysis pointing to the critical bottleneck flight or airport. */
   threatAssessment: string;
+  /** One-sentence recommended tactic with quantified passenger and cost savings. */
   recommendedActionSummary: string;
+  /** ID of the top-ranked recovery option, or null if the network is nominal. */
   suggestedRecoveryId: string | null;
+  /** KPI cards for the Dispatcher Intelligence panel. */
   keyFacts: Array<{ label: string; value: string; badge?: string }>;
 }
 
+/**
+ * Generates a data-driven tactical briefing from a completed simulation run
+ * and its evaluated recovery options.
+ *
+ * The briefing is fully deterministic — given the same `sim` and `recoveryOptions`
+ * it always produces identical text, making it unit-testable with no mocking.
+ *
+ * @param sim - Output from {@link runSimulation}.
+ * @param recoveryOptions - Ranked list from {@link evaluateRecoveryOptions}.
+ * @returns A {@link DispatcherBriefing} ready to display in the UI.
+ */
 export function generateTacticalBriefing(
   sim: SimulationOutput,
   recoveryOptions: RecoveryAction[]

@@ -30,7 +30,6 @@ export const RecoveryView: React.FC = () => {
 
   const delaySaved = Math.max(0, baselineOutput.total_delay_minutes - activeOutput.total_delay_minutes);
   const paxSaved = Math.max(0, baselineOutput.stranded_passengers - activeOutput.stranded_passengers);
-  const crewSaved = Math.max(0, baselineOutput.crew_violations_count - activeOutput.crew_violations_count);
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-black select-none">
