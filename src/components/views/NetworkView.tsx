@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useSimulationStore } from '../../store/useSimulationStore';
 import { AirspaceView } from '../globe/AirspaceView';
 import { DATASET } from '../../engine/simulator';
@@ -19,19 +19,30 @@ export const NetworkView: React.FC = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'delayed' | 'cancelled' | 'ontime'>('all');
 
-  const flightsList = Object.values(activeOutput.flights).filter(f => {
+  // Memoised filtered flight list — recomputes only when search/filter/output changes
+  const flightsList = useMemo(() => Object.values(activeOutput.flights).filter(f => {
+    const q = search.toLowerCase();
     const matchesSearch =
-      f.flight_id.toLowerCase().includes(search.toLowerCase()) ||
-      f.origin.toLowerCase().includes(search.toLowerCase()) ||
-      f.destination.toLowerCase().includes(search.toLowerCase()) ||
-      f.tail_id.toLowerCase().includes(search.toLowerCase());
+      f.flight_id.toLowerCase().includes(q) ||
+      f.origin.toLowerCase().includes(q) ||
+      f.destination.toLowerCase().includes(q) ||
+      f.tail_id.toLowerCase().includes(q);
 
     if (!matchesSearch) return false;
     if (statusFilter === 'delayed') return f.dep_delay > 0 && !f.is_cancelled;
     if (statusFilter === 'cancelled') return f.is_cancelled;
     if (statusFilter === 'ontime') return f.dep_delay === 0 && !f.is_cancelled;
     return true;
-  });
+  }), [activeOutput, search, statusFilter]);
+
+  // Stable callbacks — avoid inline arrow re-creation on every render
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+  }, []);
+
+  const handleFilterChange = useCallback((f: 'all' | 'delayed' | 'cancelled' | 'ontime') => {
+    setStatusFilter(f);
+  }, []);
 
   return (
     <div className="flex-1 flex overflow-hidden bg-black select-none">
@@ -97,7 +108,7 @@ export const NetworkView: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-1 bg-[#121824] p-0.5 rounded-lg border border-[#1E2736] text-xs">
               <button
-                onClick={() => setStatusFilter('all')}
+                onClick={() => handleFilterChange('all')}
                 className={`px-2.5 py-1 rounded text-[11px] font-medium transition ${
                   statusFilter === 'all' ? 'bg-[#253043] text-white' : 'text-zinc-400 hover:text-zinc-200'
                 }`}
@@ -105,7 +116,7 @@ export const NetworkView: React.FC = () => {
                 All ({activeOutput.total_flights})
               </button>
               <button
-                onClick={() => setStatusFilter('delayed')}
+                onClick={() => handleFilterChange('delayed')}
                 className={`px-2.5 py-1 rounded text-[11px] font-medium transition ${
                   statusFilter === 'delayed' ? 'bg-[#401216] text-[#FF5555]' : 'text-zinc-400 hover:text-zinc-200'
                 }`}
@@ -113,7 +124,7 @@ export const NetworkView: React.FC = () => {
                 Delayed ({activeOutput.delayed_flights_count})
               </button>
               <button
-                onClick={() => setStatusFilter('cancelled')}
+                onClick={() => handleFilterChange('cancelled')}
                 className={`px-2.5 py-1 rounded text-[11px] font-medium transition ${
                   statusFilter === 'cancelled' ? 'bg-rose-950 text-rose-300' : 'text-zinc-400 hover:text-zinc-200'
                 }`}
@@ -121,7 +132,7 @@ export const NetworkView: React.FC = () => {
                 Cancelled ({activeOutput.cancelled_flights_count})
               </button>
               <button
-                onClick={() => setStatusFilter('ontime')}
+                onClick={() => handleFilterChange('ontime')}
                 className={`px-2.5 py-1 rounded text-[11px] font-medium transition ${
                   statusFilter === 'ontime' ? 'bg-emerald-950/80 text-emerald-400' : 'text-zinc-400 hover:text-zinc-200'
                 }`}
@@ -137,7 +148,7 @@ export const NetworkView: React.FC = () => {
               type="text"
               placeholder="Filter by flight (DS0103), origin (BOM), tail (VT-IND)..."
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={handleSearchChange}
               className="w-full bg-[#121824] border border-[#1E2736] rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 font-mono-numbers"
             />
           </div>

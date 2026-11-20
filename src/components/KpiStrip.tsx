@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { useSimulationStore } from '../store/useSimulationStore';
 
-export const KpiStrip: React.FC = () => {
+/** Memoised KPI strip — only re-renders when simulation output changes. */
+export const KpiStrip: React.FC = memo(() => {
   const { activeOutput } = useSimulationStore();
 
   return (
@@ -22,7 +23,7 @@ export const KpiStrip: React.FC = () => {
 
       {/* 2. Delayed Flights */}
       <div className="text-center" aria-label={`Delayed Flights: ${activeOutput.delayed_flights_count}`}>
-        <div className="text-xl font-bold text-[#FF5555] tracking-tight">
+        <div className="text-xl font-bold text-[#FF5555] tracking-tight" aria-live="polite" aria-atomic="true">
           {activeOutput.delayed_flights_count.toString().padStart(2, '0')}
         </div>
         <div className="text-[11px] text-zinc-400 font-sans tracking-wide">
@@ -42,7 +43,7 @@ export const KpiStrip: React.FC = () => {
 
       {/* 4. Stranded Pax */}
       <div className="text-center" aria-label={`Stranded Passengers: ${activeOutput.stranded_passengers}`}>
-        <div className="text-xl font-bold text-white tracking-tight">
+        <div className="text-xl font-bold text-white tracking-tight" aria-live="polite" aria-atomic="true">
           {activeOutput.stranded_passengers}
         </div>
         <div className="text-[11px] text-zinc-400 font-sans tracking-wide">
@@ -62,7 +63,7 @@ export const KpiStrip: React.FC = () => {
 
       {/* 6. Total Delay */}
       <div className="text-center" aria-label={`Total Delay Minutes: ${activeOutput.total_delay_minutes.toLocaleString()} minutes`}>
-        <div className="text-xl font-bold text-white tracking-tight">
+        <div className="text-xl font-bold text-white tracking-tight" aria-live="polite" aria-atomic="true">
           {activeOutput.total_delay_minutes.toLocaleString()} min
         </div>
         <div className="text-[11px] text-zinc-400 font-sans tracking-wide">
@@ -71,4 +72,7 @@ export const KpiStrip: React.FC = () => {
       </div>
     </div>
   );
-};
+});
+
+KpiStrip.displayName = 'KpiStrip';
+

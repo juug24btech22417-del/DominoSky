@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useSimulationStore } from '../../store/useSimulationStore';
 import {
   GitBranch,
@@ -17,7 +17,16 @@ export const InsightsView: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<'domino_dna' | 'dgca_fdtl' | 'financials'>('domino_dna');
 
-  const exportReport = () => {
+  // Memoised derived metrics — prevent recalculation on unrelated re-renders
+  const recoveryDelta = useMemo(() => ({
+    delaySaved: Math.max(0, baselineOutput.total_delay_minutes - activeOutput.total_delay_minutes),
+    paxSaved: Math.max(0, baselineOutput.stranded_passengers - activeOutput.stranded_passengers),
+    crewSaved: Math.max(0, baselineOutput.crew_violations_count - activeOutput.crew_violations_count),
+    costSaved: Math.max(0, baselineOutput.disruption_cost_inr - activeOutput.disruption_cost_inr),
+  }), [activeOutput, baselineOutput]);
+
+  // Stable export callback — avoids function recreation on every render
+  const exportReport = useCallback(() => {
     const reportData = {
       timestamp: new Date().toISOString(),
       scenario: {
@@ -39,6 +48,7 @@ export const InsightsView: React.FC = () => {
         strandedPax: activeOutput.stranded_passengers,
         crewViolations: activeOutput.crew_violations_count
       },
+      recoveryDelta,
       appliedRecoveryPlan: appliedRecoveryId || 'None (Baseline)'
     };
 
@@ -49,7 +59,7 @@ export const InsightsView: React.FC = () => {
     a.download = `DominoSky_Executive_Audit_${closureAirport || 'BOM'}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  };
+  }, [activeOutput, baselineOutput, closureAirport, closureDuration, disruptionReason, appliedRecoveryId, recoveryDelta]);
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-black select-none font-sans">

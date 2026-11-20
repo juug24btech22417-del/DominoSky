@@ -30,7 +30,7 @@ export const App: React.FC = () => {
       </section>
 
       {/* 3. Main Operational Command Center */}
-      <main id="main-content" role="main" aria-label="Aviation Operations Command Center" className="flex-1 flex overflow-hidden relative">
+      <main id="main-content" tabIndex={-1} role="main" aria-label="Aviation Operations Command Center" className="flex-1 flex overflow-hidden relative">
         {/* Left Mini Dock */}
         <nav aria-label="Operations Side Dock">
           <MiniDock />

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useSimulationStore } from '../store/useSimulationStore';
 import { DATASET } from '../engine/simulator';
 import {
@@ -17,13 +17,14 @@ export const SimulateDisruptionPanel: React.FC = () => {
     applyPreset
   } = useSimulationStore();
 
-  const handleAirportChange = (apId: string) => {
+  // Stable callbacks — prevent inline function recreation on every render
+  const handleAirportChange = useCallback((apId: string) => {
     setClosure(apId, '08:00', closureDuration, disruptionReason);
-  };
+  }, [setClosure, closureDuration, disruptionReason]);
 
-  const handleDurationChange = (dur: number) => {
+  const handleDurationChange = useCallback((dur: number) => {
     setClosure(closureAirport || 'BOM', '08:00', dur, disruptionReason);
-  };
+  }, [setClosure, closureAirport, disruptionReason]);
 
   return (
     <div className="w-80 bg-transparent p-6 flex flex-col space-y-5 select-none text-xs font-sans z-20">
