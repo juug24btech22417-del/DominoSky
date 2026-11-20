@@ -2,15 +2,7 @@ import React, { useState } from 'react';
 import { useSimulationStore } from '../../store/useSimulationStore';
 import {
   GitBranch,
-  ShieldAlert,
-  DollarSign,
-  FileText,
-  Download,
-  AlertTriangle,
-  Clock,
-  UserCheck,
-  CheckCircle2,
-  ChevronRight
+  Download
 } from 'lucide-react';
 
 export const InsightsView: React.FC = () => {

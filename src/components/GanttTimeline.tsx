@@ -58,35 +58,39 @@ export const GanttTimeline: React.FC = () => {
           <span className="font-semibold tracking-wider text-[11px] text-zinc-200 uppercase">
             TIMELINE & RESOURCE ALLOCATION
           </span>
-          <span className="text-[10px] text-zinc-500">FLEET ROTATIONS GANTT</span>
+          <span className="text-[10px] text-zinc-400">FLEET ROTATIONS GANTT</span>
         </div>
 
         {/* Playback Controls */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3" role="toolbar" aria-label="Timeline Playback Toolbar">
           <div className="flex items-center space-x-1.5 bg-black px-2 py-0.5 rounded border border-zinc-800">
             <button
               onClick={togglePlay}
-              className="p-1 text-zinc-300 hover:text-white transition"
+              aria-label={isPlaying ? 'Pause simulation time machine' : 'Play simulation time machine'}
+              className="p-1 text-zinc-300 hover:text-white transition focus-visible:ring-2 focus-visible:ring-cyan-400 outline-none"
             >
-              {isPlaying ? <Pause className="w-3.5 h-3.5 fill-current" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+              {isPlaying ? <Pause className="w-3.5 h-3.5 fill-current" aria-hidden="true" /> : <Play className="w-3.5 h-3.5 fill-current" aria-hidden="true" />}
             </button>
             <button
               onClick={() => setCurrentTime(minDayMin)}
-              className="p-1 text-zinc-500 hover:text-white transition"
-              title="Reset Time"
+              aria-label="Reset clock to 06:00 AM"
+              className="p-1 text-zinc-400 hover:text-white transition focus-visible:ring-2 focus-visible:ring-cyan-400 outline-none"
+              title="Reset Time to 06:00 AM"
             >
-              <RotateCcw className="w-3 h-3" />
+              <RotateCcw className="w-3 h-3" aria-hidden="true" />
             </button>
           </div>
 
           {/* Speed Toggles */}
-          <div className="flex items-center bg-black rounded border border-zinc-800 p-0.5 text-[10px]">
+          <div className="flex items-center bg-black rounded border border-zinc-800 p-0.5 text-[10px]" role="group" aria-label="Playback Speed Multiplier">
             {[1, 5, 15, 60].map(s => (
               <button
                 key={s}
                 onClick={() => setSpeed(s)}
-                className={`px-1.5 py-0.5 rounded transition ${
-                  playbackSpeed === s ? 'bg-zinc-800 text-white font-semibold' : 'text-zinc-500 hover:text-zinc-300'
+                aria-label={`Set playback speed to ${s}x`}
+                aria-pressed={playbackSpeed === s}
+                className={`px-1.5 py-0.5 rounded transition focus-visible:ring-2 focus-visible:ring-cyan-400 outline-none ${
+                  playbackSpeed === s ? 'bg-zinc-800 text-white font-semibold' : 'text-zinc-400 hover:text-zinc-300'
                 }`}
               >
                 {s}x
@@ -95,7 +99,7 @@ export const GanttTimeline: React.FC = () => {
           </div>
 
           <div className="px-2.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-200 text-xs font-semibold flex items-center space-x-1">
-            <Clock className="w-3 h-3 text-zinc-400" />
+            <Clock className="w-3 h-3 text-zinc-400" aria-hidden="true" />
             <span>{toHHMM(currentTimeMin)} IST</span>
           </div>
         </div>
@@ -105,7 +109,7 @@ export const GanttTimeline: React.FC = () => {
       <div className="flex-1 flex overflow-hidden">
         {/* Left: Aircraft Tail Column */}
         <div className="w-24 border-r border-surface-border bg-black divide-y divide-zinc-900 text-[10px] text-zinc-400 font-medium overflow-y-auto">
-          <div className="h-6 px-2 flex items-center text-[9px] text-zinc-500 uppercase">TAIL ID</div>
+          <div className="h-6 px-2 flex items-center text-[9px] text-zinc-400 uppercase font-semibold">TAIL ID</div>
           {tailList.map(tail => (
             <div key={tail} className="h-7 px-2 flex items-center justify-between text-zinc-300">
               <span>{tail}</span>
@@ -123,7 +127,7 @@ export const GanttTimeline: React.FC = () => {
                 <div
                   key={h.label}
                   style={{ left: `${leftPct}%` }}
-                  className="absolute top-0 bottom-0 border-l border-zinc-800 pl-1 text-[9px] text-zinc-500 flex items-center"
+                  className="absolute top-0 bottom-0 border-l border-zinc-800 pl-1 text-[9px] text-zinc-400 flex items-center"
                 >
                   {h.label}
                 </div>
@@ -150,7 +154,7 @@ export const GanttTimeline: React.FC = () => {
                     );
                   })}
 
-                  {/* Flight Segment Blocks (Refined, no neon!) */}
+                  {/* Flight Segment Blocks */}
                   {flights.map(f => {
                     const startMin = f.actual_dep_min;
                     const endMin = f.actual_arr_min;
@@ -175,9 +179,15 @@ export const GanttTimeline: React.FC = () => {
                     return (
                       <div
                         key={f.flight_id}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Flight ${f.flight_id} from ${f.origin} to ${f.destination}, departure ${f.actual_dep}, arrival ${f.actual_arr}, ${f.dep_delay > 0 ? `delayed by ${f.dep_delay} minutes` : 'on time'}`}
                         onClick={() => selectFlight(f.flight_id)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' || e.key === ' ') selectFlight(f.flight_id);
+                        }}
                         style={{ left: `${leftPct}%`, width: `${widthPct}%` }}
-                        className={`absolute top-1 bottom-1 rounded-[2px] border px-1 flex items-center justify-between text-[9px] cursor-pointer hover:brightness-125 transition truncate z-10 ${bgColor}`}
+                        className={`absolute top-1 bottom-1 rounded-[2px] border px-1 flex items-center justify-between text-[9px] cursor-pointer hover:brightness-125 transition truncate z-10 focus-visible:ring-1 focus-visible:ring-cyan-400 outline-none ${bgColor}`}
                         title={`${f.flight_id} (${f.origin}→${f.destination}) ${f.actual_dep}-${f.actual_arr}`}
                       >
                         <span className="truncate">{f.flight_id}</span>
@@ -189,7 +199,7 @@ export const GanttTimeline: React.FC = () => {
               );
             })}
 
-            {/* Live Time Scrubber Indicator Line (Clean amber/white, no neon!) */}
+            {/* Live Time Scrubber Indicator Line */}
             {currentTimeMin >= minDayMin && currentTimeMin <= maxDayMin && (
               <div
                 style={{ left: `${((currentTimeMin - minDayMin) / totalSpan) * 100}%` }}

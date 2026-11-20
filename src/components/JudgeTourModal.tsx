@@ -99,21 +99,27 @@ export const JudgeTourModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-16 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-xl select-none px-4">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="judge-tour-title"
+      className="fixed bottom-16 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-xl select-none px-4"
+    >
       <div className="bg-zinc-950 border border-zinc-800 rounded-lg shadow-2xl p-4 text-xs font-mono-numbers space-y-3">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
           <div className="flex items-center space-x-2 text-zinc-100">
-            <Zap className="w-4 h-4 text-amber-400 fill-current" />
-            <span className="font-semibold tracking-wider">JUDGE DEMONSTRATION TOUR</span>
+            <Zap className="w-4 h-4 text-amber-400 fill-current" aria-hidden="true" />
+            <h2 id="judge-tour-title" className="font-semibold tracking-wider">JUDGE DEMONSTRATION TOUR</h2>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="text-[10px] text-zinc-500">STEP {step} OF {steps.length}</span>
+            <span className="text-[10px] text-zinc-400">STEP {step} OF {steps.length}</span>
             <button
               onClick={stopJudgeTour}
-              className="text-zinc-500 hover:text-white transition p-1"
+              aria-label="Close judge demonstration tour"
+              className="text-zinc-400 hover:text-white transition p-1 focus-visible:ring-2 focus-visible:ring-cyan-400 outline-none rounded"
             >
-              <X className="w-4 h-4" />
+              <X className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -121,7 +127,7 @@ export const JudgeTourModal: React.FC = () => {
         {/* Content */}
         <div className="space-y-1">
           <div className="font-semibold text-sm text-zinc-100">{currentStepData.title}</div>
-          <div className="text-[11px] text-zinc-400 font-medium">{currentStepData.subtitle}</div>
+          <div className="text-[11px] text-zinc-300 font-medium">{currentStepData.subtitle}</div>
           <p className="text-zinc-300 text-xs font-sans leading-relaxed pt-1">
             {currentStepData.text}
           </p>
@@ -132,30 +138,33 @@ export const JudgeTourModal: React.FC = () => {
           <button
             onClick={handlePrev}
             disabled={step === 1}
-            className={`px-3 py-1.5 rounded flex items-center space-x-1 transition ${
+            aria-label="Previous step in demonstration tour"
+            className={`px-3 py-1.5 rounded flex items-center space-x-1 transition focus-visible:ring-2 focus-visible:ring-cyan-400 outline-none ${
               step === 1
                 ? 'opacity-40 cursor-not-allowed text-zinc-600'
                 : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300'
             }`}
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
+            <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
             <span>PREV</span>
           </button>
 
           <button
             onClick={currentStepData.onRun}
-            className="px-3 py-1.5 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-100 font-semibold flex items-center space-x-1.5 transition"
+            aria-label={`Run demonstration action: ${currentStepData.actionName}`}
+            className="px-3 py-1.5 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-100 font-semibold flex items-center space-x-1.5 transition focus-visible:ring-2 focus-visible:ring-cyan-400 outline-none"
           >
-            <Play className="w-3 h-3 fill-current text-amber-400" />
+            <Play className="w-3 h-3 fill-current text-amber-400" aria-hidden="true" />
             <span>RUN: {currentStepData.actionName}</span>
           </button>
 
           <button
             onClick={handleNext}
-            className="px-4 py-1.5 rounded bg-white text-black font-semibold flex items-center space-x-1 hover:bg-zinc-200 transition"
+            aria-label={step === steps.length ? 'Finish demonstration tour' : 'Next step in demonstration tour'}
+            className="px-4 py-1.5 rounded bg-white text-black font-semibold flex items-center space-x-1 hover:bg-zinc-200 transition focus-visible:ring-2 focus-visible:ring-cyan-400 outline-none"
           >
             <span>{step === steps.length ? 'FINISH' : 'NEXT'}</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
           </button>
         </div>
       </div>

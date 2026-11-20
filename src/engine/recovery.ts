@@ -1,4 +1,4 @@
-import { SimulationParams, runSimulation, DATASET, toMinutes } from './simulator';
+import { SimulationParams, runSimulation } from './simulator';
 import { SimulationOutput, RecoveryAction } from '../types';
 
 export function evaluateRecoveryOptions(
@@ -11,13 +11,6 @@ export function evaluateRecoveryOptions(
   }
 
   const actions: RecoveryAction[] = [];
-
-  // Helper to format currency in Lakhs/Crores
-  const formatInr = (val: number) => {
-    if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)} Cr`;
-    if (val >= 100000) return `₹${(val / 100000).toFixed(2)} L`;
-    return `₹${val.toLocaleString()}`;
-  };
 
   // Option 1: Spare Aircraft Injection at BLR (VT-DS17)
   // Find delayed flights departing from BLR that have a spare available

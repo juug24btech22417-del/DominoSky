@@ -5,9 +5,13 @@ export const KpiStrip: React.FC = () => {
   const { activeOutput } = useSimulationStore();
 
   return (
-    <div className="h-16 bg-transparent px-8 flex items-center justify-end space-x-12 select-none font-mono-numbers">
+    <div
+      role="region"
+      aria-label="Real-Time Network Operational Statistics"
+      className="h-16 bg-transparent px-8 flex items-center justify-end space-x-12 select-none font-mono-numbers"
+    >
       {/* 1. Total Flights */}
-      <div className="text-center">
+      <div className="text-center" aria-label={`Total Flights: ${activeOutput.total_flights}`}>
         <div className="text-xl font-bold text-white tracking-tight">
           {activeOutput.total_flights}
         </div>
@@ -17,7 +21,7 @@ export const KpiStrip: React.FC = () => {
       </div>
 
       {/* 2. Delayed Flights */}
-      <div className="text-center">
+      <div className="text-center" aria-label={`Delayed Flights: ${activeOutput.delayed_flights_count}`}>
         <div className="text-xl font-bold text-[#FF5555] tracking-tight">
           {activeOutput.delayed_flights_count.toString().padStart(2, '0')}
         </div>
@@ -27,7 +31,7 @@ export const KpiStrip: React.FC = () => {
       </div>
 
       {/* 3. Cancelled Flights */}
-      <div className="text-center">
+      <div className="text-center" aria-label={`Cancelled Flights: ${activeOutput.cancelled_flights_count}`}>
         <div className="text-xl font-bold text-white tracking-tight">
           {activeOutput.cancelled_flights_count.toString().padStart(2, '0')}
         </div>
@@ -37,7 +41,7 @@ export const KpiStrip: React.FC = () => {
       </div>
 
       {/* 4. Stranded Pax */}
-      <div className="text-center">
+      <div className="text-center" aria-label={`Stranded Passengers: ${activeOutput.stranded_passengers}`}>
         <div className="text-xl font-bold text-white tracking-tight">
           {activeOutput.stranded_passengers}
         </div>
@@ -47,7 +51,7 @@ export const KpiStrip: React.FC = () => {
       </div>
 
       {/* 5. Crew Violations */}
-      <div className="text-center">
+      <div className="text-center" aria-label={`Crew Violations: ${activeOutput.crew_violations_count}`}>
         <div className="text-xl font-bold text-white tracking-tight">
           {activeOutput.crew_violations_count.toString().padStart(2, '0')}
         </div>
@@ -57,7 +61,7 @@ export const KpiStrip: React.FC = () => {
       </div>
 
       {/* 6. Total Delay */}
-      <div className="text-center">
+      <div className="text-center" aria-label={`Total Delay Minutes: ${activeOutput.total_delay_minutes.toLocaleString()} minutes`}>
         <div className="text-xl font-bold text-white tracking-tight">
           {activeOutput.total_delay_minutes.toLocaleString()} min
         </div>

@@ -5,9 +5,7 @@ import { DATASET } from '../../engine/simulator';
 import {
   Search,
   Plane,
-  AlertTriangle,
-  Building2,
-  Clock
+  Building2
 } from 'lucide-react';
 
 export const NetworkView: React.FC = () => {

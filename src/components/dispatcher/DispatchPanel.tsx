@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSimulationStore } from '../../store/useSimulationStore';
-import { DATASET } from '../../engine/simulator';
+import { DATASET as _DATASET } from '../../engine/simulator';
 import confetti from 'canvas-confetti';
 import {
   Brain,
@@ -8,10 +8,7 @@ import {
   CheckCircle2,
   AlertOctagon,
   ArrowRight,
-  TrendingDown,
   Sparkles,
-  Plane,
-  Clock,
   ShieldCheck,
   ChevronRight,
   Zap,
@@ -21,7 +18,7 @@ import {
 export const DispatchPanel: React.FC = () => {
   const {
     activeOutput,
-    baselineOutput,
+    baselineOutput: _baselineOutput,
     recoveryOptions,
     briefing,
     appliedRecoveryId,

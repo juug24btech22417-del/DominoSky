@@ -408,8 +408,12 @@ export const AirspaceView: React.FC = () => {
       {/* 60 FPS Transparent Flight Radar Canvas Overlay */}
       <canvas
         ref={flightCanvasRef}
+        role="img"
+        aria-label="Real-time Indian Airspace Radar Map displaying live flight contrails, cruising aircraft positions, and Doppler weather storm cells"
         className="absolute inset-0 pointer-events-none z-[400]"
-      />
+      >
+        Live Airspace Radar Feed
+      </canvas>
 
       <style>{`
         .satellite-dark-filter {

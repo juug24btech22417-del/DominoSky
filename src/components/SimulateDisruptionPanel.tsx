@@ -5,8 +5,7 @@ import {
   Plane,
   Calendar,
   CloudLightning,
-  Play,
-  RotateCcw
+  Play
 } from 'lucide-react';
 
 export const SimulateDisruptionPanel: React.FC = () => {

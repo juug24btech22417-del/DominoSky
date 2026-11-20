@@ -38,8 +38,7 @@ export const NightGlobeView: React.FC = () => {
     activeOutput,
     currentTimeMin,
     closureAirport,
-    selectedFlightId,
-    selectFlight
+    selectedFlightId
   } = useSimulationStore();
 
   const globeGroupRef = useRef<THREE.Group | null>(null);

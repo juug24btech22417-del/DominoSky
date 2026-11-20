@@ -82,8 +82,6 @@ export function runSimulation(params: SimulationParams): SimulationOutput {
     legs.sort((a, b) => a.leg_order - b.leg_order);
 
     let prevArrival: number | null = null;
-    let prevDest: string | null = null;
-    let prevFlightDelayed = false;
     let prevFlightId: string | null = null;
     let activeTail = legs[0].tail_id;
 
@@ -259,8 +257,6 @@ export function runSimulation(params: SimulationParams): SimulationOutput {
       }
 
       prevArrival = actualArrMin;
-      prevDest = leg.destination;
-      prevFlightDelayed = isDelayed;
       prevFlightId = leg.flight_id;
     }
   }

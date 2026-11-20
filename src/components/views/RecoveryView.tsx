@@ -5,24 +5,16 @@ import confetti from 'canvas-confetti';
 import {
   Zap,
   CheckCircle2,
-  Clock,
-  Users,
-  ShieldCheck,
-  TrendingDown,
-  AlertOctagon,
-  Sparkles,
-  ArrowRight
+  Sparkles
 } from 'lucide-react';
 
 export const RecoveryView: React.FC = () => {
   const {
     activeOutput,
     baselineOutput,
-    recoveryOptions,
     appliedRecoveryId,
     applyRecovery,
-    briefing,
-    closureAirport
+    briefing
   } = useSimulationStore();
 
   const handleApply = (id: string | null) => {
