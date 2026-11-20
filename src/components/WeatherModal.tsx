@@ -4,12 +4,12 @@ import { X, CloudRain, CloudLightning, Wind, Eye } from 'lucide-react';
 
 export const WeatherModal: React.FC = () => {
   const {
-    isWeatherOverlayActive,
-    setIsWeatherOverlayActive,
+    isWeatherOpen,
+    setIsWeatherOpen,
     closureAirport
   } = useSimulationStore();
 
-  if (!isWeatherOverlayActive) return null;
+  if (!isWeatherOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 select-none">
@@ -21,7 +21,7 @@ export const WeatherModal: React.FC = () => {
             <h3 className="text-sm font-bold text-white">Doppler Weather Radar & Airport METAR Feed</h3>
           </div>
           <button
-            onClick={() => setIsWeatherOverlayActive(false)}
+            onClick={() => setIsWeatherOpen(false)}
             className="text-zinc-400 hover:text-white transition p-1"
           >
             <X className="w-4 h-4" />

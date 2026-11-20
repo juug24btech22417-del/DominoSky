@@ -12,15 +12,19 @@ interface SimulationState {
   activeNavTab: 'operations' | 'network' | 'recovery' | 'insights';
   setActiveNavTab: (tab: 'operations' | 'network' | 'recovery' | 'insights') => void;
 
-  // MiniDock / Side Dock State
-  activeDockItem: 'operations' | 'network' | 'gantt' | 'weather' | 'recovery' | 'settings';
-  setActiveDockItem: (item: 'operations' | 'network' | 'gantt' | 'weather' | 'recovery' | 'settings') => void;
-
-  // Modals & Overlays
+  // Active Dock Section & Modals
+  activeDockView: 'dashboard' | 'airspace' | 'gantt';
+  setActiveDockView: (view: 'dashboard' | 'airspace' | 'gantt') => void;
+  activeScheduleTab: 'schedule' | 'recovery' | 'dna';
+  setActiveScheduleTab: (tab: 'schedule' | 'recovery' | 'dna') => void;
+  isWeatherOpen: boolean;
+  setIsWeatherOpen: (open: boolean) => void;
   isSettingsOpen: boolean;
   setIsSettingsOpen: (open: boolean) => void;
-  isWeatherOverlayActive: boolean;
-  setIsWeatherOverlayActive: (active: boolean) => void;
+  isNotificationsOpen: boolean;
+  setIsNotificationsOpen: (open: boolean) => void;
+  isProfileOpen: boolean;
+  setIsProfileOpen: (open: boolean) => void;
 
   // Scenario Config
   closureAirport: string | null;
@@ -83,21 +87,18 @@ export const useSimulationStore = create<SimulationState>((set, get) => {
     activeNavTab: 'operations',
     setActiveNavTab: (tab) => set({ activeNavTab: tab }),
 
-    activeDockItem: 'operations',
-    setActiveDockItem: (item) => {
-      set({ activeDockItem: item });
-      if (item === 'operations') set({ activeNavTab: 'operations' });
-      else if (item === 'network') set({ activeNavTab: 'network' });
-      else if (item === 'recovery') set({ activeNavTab: 'recovery' });
-      else if (item === 'settings') set({ isSettingsOpen: true });
-      else if (item === 'weather') set({ isWeatherOverlayActive: true });
-    },
-
+    activeDockView: 'dashboard',
+    setActiveDockView: (view) => set({ activeDockView: view }),
+    activeScheduleTab: 'schedule',
+    setActiveScheduleTab: (tab) => set({ activeScheduleTab: tab }),
+    isWeatherOpen: false,
+    setIsWeatherOpen: (open) => set({ isWeatherOpen: open }),
     isSettingsOpen: false,
     setIsSettingsOpen: (open) => set({ isSettingsOpen: open }),
-
-    isWeatherOverlayActive: false,
-    setIsWeatherOverlayActive: (active) => set({ isWeatherOverlayActive: active }),
+    isNotificationsOpen: false,
+    setIsNotificationsOpen: (open) => set({ isNotificationsOpen: open }),
+    isProfileOpen: false,
+    setIsProfileOpen: (open) => set({ isProfileOpen: open }),
 
     closureAirport: 'BOM',
     closureStartStr: '08:00',

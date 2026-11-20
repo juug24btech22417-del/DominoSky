@@ -3,137 +3,185 @@ import { useSimulationStore } from '../store/useSimulationStore';
 import { toHHMM } from '../engine/simulator';
 import {
   Plane,
+  Bell,
+  User,
+  Zap,
   RotateCcw,
   ShieldAlert,
-  Zap,
-  Sparkles,
-  SlidersHorizontal
+  AlertTriangle,
+  X,
+  Clock,
+  ShieldCheck
 } from 'lucide-react';
 
 export const Header: React.FC = () => {
   const {
-    activeNavTab,
-    setActiveNavTab,
     currentTimeMin,
     closureAirport,
     resetAll,
     startJudgeTour,
     isJudgeTourRunning,
-    setIsSettingsOpen
+    activeOutput,
+    isNotificationsOpen,
+    setIsNotificationsOpen,
+    isProfileOpen,
+    setIsProfileOpen,
+    setActiveScheduleTab
   } = useSimulationStore();
 
-  const navItems: Array<{ id: 'operations' | 'network' | 'recovery' | 'insights'; label: string }> = [
-    { id: 'operations', label: 'Operations' },
-    { id: 'network', label: 'Network' },
-    { id: 'recovery', label: 'Recovery' },
-    { id: 'insights', label: 'Insights' }
-  ];
-
   return (
-    <header className="h-14 bg-[#0A0D14] border-b border-[#1A2230] px-5 flex items-center justify-between select-none z-30 shrink-0">
-      {/* 1. Left: Try-On + Brand & Subtitle */}
+    <header className="h-12 bg-black border-b border-surface-border px-4 flex items-center justify-between select-none z-30 relative">
+      {/* Left: Branding & Subtitle */}
       <div className="flex items-center space-x-3.5">
-        {/* Try-On Button (Matches screenshot) */}
-        <button
-          onClick={() => setActiveNavTab('operations')}
-          className="px-2.5 py-1 rounded-md bg-[#141A24] hover:bg-[#1E2736] border border-[#232F42] text-[11px] text-zinc-300 flex items-center space-x-1.5 transition active:scale-95 shadow-sm"
-        >
-          <Sparkles className="w-3 h-3 text-cyan-400" />
-          <span className="font-medium">Try-On</span>
-        </button>
+        <div className="flex items-center space-x-2">
+          <div className="w-7 h-7 rounded bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-200">
+            <Plane className="w-4 h-4 transform -rotate-45" />
+          </div>
+          <div className="flex items-baseline space-x-1.5 font-mono-numbers">
+            <span className="font-bold text-sm tracking-wider text-white">DOMINO</span>
+            <span className="text-zinc-400 text-xs font-medium tracking-widest">/ SKY</span>
+          </div>
+        </div>
 
-        {/* Brand */}
-        <div className="flex items-baseline space-x-2">
-          <span className="font-extrabold text-sm tracking-wider text-white">DOMINO SKY</span>
-          <span className="text-[10px] text-zinc-400 font-sans tracking-tight hidden sm:inline">
-            Network Operations Intelligence
-          </span>
+        <div className="h-4 w-[1px] bg-surface-border hidden md:block" />
+
+        <div className="hidden lg:flex items-center space-x-2 text-[11px] font-mono-numbers text-zinc-400">
+          <span className="text-zinc-300 font-medium">OPERATIONS CONTROL CENTER</span>
+          <span className="text-zinc-600">•</span>
+          <span className="text-zinc-400">GLOBAL FLIGHT DIRECTOR</span>
         </div>
       </div>
 
-      {/* 2. Center: Navigation Tabs (Operations | Network | Recovery | Insights) */}
-      <nav className="flex items-center p-1 rounded-full bg-[#121722] border border-[#1E2736]">
-        {navItems.map((item) => {
-          const isActive = activeNavTab === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActiveNavTab(item.id)}
-              className={`px-4 py-1 text-xs rounded-full font-medium transition-all duration-150 ${
-                isActive
-                  ? 'bg-[#253043] text-white font-semibold shadow-inner'
-                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-[#1A2230]'
-              }`}
-            >
-              {item.label}
-            </button>
-          );
-        })}
-      </nav>
-
-      {/* 3. Right: Live Simulation Indicator + Clock + Actions + Profile */}
+      {/* Center: Large Operational Clock */}
       <div className="flex items-center space-x-3">
-        {/* Ground Stop Badge */}
-        {closureAirport && (
-          <div className="hidden md:flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-rose-950/50 border border-rose-800/60 text-rose-300 text-[11px] font-mono-numbers animate-pulse">
-            <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
-            <span className="font-semibold">{closureAirport} GROUND STOP</span>
+        <div className="px-3 py-1 rounded bg-zinc-950 border border-zinc-800 text-center">
+          <div className="text-xs font-semibold text-zinc-100 tracking-wider font-mono-numbers">
+            {toHHMM(currentTimeMin)}:00 IST <span className="text-zinc-500 text-[10px]">| 20 NOV 2026</span>
           </div>
-        )}
-
-        {/* Live Simulation Pill */}
-        <div className="flex items-center space-x-1.5 text-xs text-zinc-300 font-mono-numbers">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-          <span className="w-2 h-2 rounded-full bg-emerald-500 -ml-3.5" />
-          <span className="text-[11px] font-medium text-zinc-300">Live Simulation</span>
         </div>
 
-        <div className="h-4 w-[1px] bg-[#1E2736]" />
+        {closureAirport && (
+          <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded bg-rose-950/40 border border-rose-800/60 text-rose-300 text-[11px] font-mono-numbers">
+            <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+            <span className="font-semibold">{closureAirport} GROUND STOP ACTIVE</span>
+          </div>
+        )}
+      </div>
 
-        {/* Operational Clock */}
-        <div className="text-xs font-semibold text-zinc-100 tracking-wider font-mono-numbers">
-          IST {toHHMM(currentTimeMin)}
+      {/* Right: Actions, Notifications, Profile & Judge Tour */}
+      <div className="flex items-center space-x-2.5 relative">
+        {/* Reset */}
+        <button
+          onClick={resetAll}
+          title="Reset to clean baseline"
+          className="p-1.5 rounded bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white transition"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+        </button>
+
+        {/* Notifications Bell */}
+        <div className="relative">
+          <button
+            onClick={() => {
+              setIsNotificationsOpen(!isNotificationsOpen);
+              setIsProfileOpen(false);
+            }}
+            title="Operational Alerts"
+            className="p-1.5 rounded bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white cursor-pointer transition"
+          >
+            <Bell className="w-3.5 h-3.5" />
+          </button>
+          {activeOutput.delayed_flights_count > 0 && (
+            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+          )}
+
+          {/* Notifications Dropdown */}
+          {isNotificationsOpen && (
+            <div className="absolute right-0 top-9 w-80 bg-zinc-950 border border-zinc-800 rounded-lg shadow-2xl p-3 z-50 text-xs font-mono-numbers space-y-2.5">
+              <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
+                <span className="font-bold text-zinc-200">ACTIVE FLIGHT ALERTS</span>
+                <button onClick={() => setIsNotificationsOpen(false)} className="text-zinc-500 hover:text-white">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {activeOutput.delayed_flights_count > 0 ? (
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {Object.values(activeOutput.flights)
+                    .filter(f => f.dep_delay > 0)
+                    .slice(0, 5)
+                    .map(f => (
+                      <div
+                        key={f.flight_id}
+                        onClick={() => {
+                          setActiveScheduleTab('recovery');
+                          setIsNotificationsOpen(false);
+                        }}
+                        className="p-2 rounded bg-zinc-900/80 border border-zinc-800 hover:border-zinc-700 cursor-pointer transition"
+                      >
+                        <div className="flex items-center justify-between font-bold text-zinc-200">
+                          <span>{f.flight_id} ({f.origin} → {f.destination})</span>
+                          <span className="text-rose-400">+{f.dep_delay} min</span>
+                        </div>
+                        <div className="text-[10px] text-zinc-500 mt-0.5">
+                          Tail: {f.tail_id} • Pax: {f.pax}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <div className="text-zinc-500 text-center py-4">No active flight alerts. Nominal flow.</div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* User / Dispatcher Profile */}
+        <div className="relative">
+          <div
+            onClick={() => {
+              setIsProfileOpen(!isProfileOpen);
+              setIsNotificationsOpen(false);
+            }}
+            className="flex items-center space-x-2 pl-2 border-l border-zinc-800 text-xs font-mono-numbers cursor-pointer hover:opacity-80 transition"
+          >
+            <div className="w-6 h-6 rounded bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300">
+              <User className="w-3 h-3" />
+            </div>
+            <span className="text-zinc-300 hidden sm:inline text-[11px]">CAPT. SHARMA</span>
+          </div>
+
+          {/* Profile Dropdown */}
+          {isProfileOpen && (
+            <div className="absolute right-0 top-9 w-64 bg-zinc-950 border border-zinc-800 rounded-lg shadow-2xl p-3 z-50 text-xs font-mono-numbers space-y-2">
+              <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
+                <span className="font-bold text-zinc-200">DISPATCHER PROFILE</span>
+                <button onClick={() => setIsProfileOpen(false)} className="text-zinc-500 hover:text-white">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <div className="text-[11px] text-zinc-400 space-y-1">
+                <div><span className="text-zinc-600">ID:</span> DS-OCC-9481</div>
+                <div><span className="text-zinc-600">Role:</span> Lead Network Dispatcher</div>
+                <div><span className="text-zinc-600">Duty Shift:</span> 06:00 – 14:00 IST</div>
+                <div><span className="text-zinc-600">Authorization:</span> DGCA Level 4 Dispatch</div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Judge Tour Button */}
         <button
           onClick={startJudgeTour}
-          className={`px-2.5 py-1 rounded-md text-[11px] font-mono-numbers flex items-center space-x-1 transition font-medium border ${
+          className={`px-3 py-1.5 rounded text-xs font-mono-numbers flex items-center space-x-1.5 transition font-medium border ${
             isJudgeTourRunning
               ? 'bg-amber-500 text-black border-amber-400 font-bold'
-              : 'bg-[#141A24] hover:bg-[#1E2736] border-[#232F42] text-zinc-300 hover:text-white'
+              : 'bg-zinc-900 hover:bg-zinc-800 border-zinc-700 text-zinc-100 hover:text-white'
           }`}
-          title="Interactive 5-step tour for judges"
         >
-          <Zap className="w-3 h-3 text-amber-400 fill-current" />
-          <span>Tour</span>
+          <Zap className="w-3.5 h-3.5 text-amber-400 fill-current" />
+          <span>JUDGE TOUR</span>
         </button>
-
-        {/* Operational Settings */}
-        <button
-          onClick={() => setIsSettingsOpen(true)}
-          title="Operational Settings & Rules"
-          className="p-1.5 rounded-md bg-[#141A24] hover:bg-[#1E2736] border border-[#232F42] text-zinc-400 hover:text-white transition"
-        >
-          <SlidersHorizontal className="w-3.5 h-3.5" />
-        </button>
-
-        {/* Reset Baseline */}
-        <button
-          onClick={resetAll}
-          title="Reset to clean baseline"
-          className="p-1.5 rounded-md bg-[#141A24] hover:bg-[#1E2736] border border-[#232F42] text-zinc-400 hover:text-white transition"
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-        </button>
-
-        {/* User Avatar Circle */}
-        <div
-          title="Capt. Sharma - Senior Flight Director"
-          className="w-7 h-7 rounded-full bg-[#18202F] border border-[#29364C] flex items-center justify-center text-zinc-200 text-xs font-bold cursor-pointer hover:border-zinc-500 transition"
-        >
-          <Plane className="w-3.5 h-3.5 transform -rotate-45 text-cyan-400" />
-        </div>
       </div>
     </header>
   );

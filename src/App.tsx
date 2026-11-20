@@ -3,75 +3,89 @@ import { useSimulationStore } from './store/useSimulationStore';
 import { Header } from './components/Header';
 import { KpiStrip } from './components/KpiStrip';
 import { MiniDock } from './components/MiniDock';
-import { SimulateDisruptionPanel } from './components/SimulateDisruptionPanel';
-import { NightGlobeView } from './components/globe/NightGlobeView';
-import { FlightInspectorCard } from './components/FlightInspectorCard';
-import { MilestoneTimeline } from './components/MilestoneTimeline';
-import { NetworkView } from './components/views/NetworkView';
-import { RecoveryView } from './components/views/RecoveryView';
-import { InsightsView } from './components/views/InsightsView';
+import { FleetAndAlerts } from './components/FleetAndAlerts';
+import { AirspaceView } from './components/globe/AirspaceView';
+import { FlightScheduleAndRecovery } from './components/FlightScheduleAndRecovery';
+import { GanttTimeline } from './components/GanttTimeline';
 import { JudgeTourModal } from './components/JudgeTourModal';
-import { SettingsModal } from './components/SettingsModal';
 import { WeatherModal } from './components/WeatherModal';
+import { SettingsModal } from './components/SettingsModal';
 
 export const App: React.FC = () => {
-  const { activeNavTab } = useSimulationStore();
+  const {
+    activeDockView,
+    setActiveDockView,
+    isWeatherOpen,
+    setIsWeatherOpen,
+    isSettingsOpen,
+    setIsSettingsOpen
+  } = useSimulationStore();
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-black text-gray-100 font-sans select-none">
       {/* 1. Global Navigation Header */}
       <Header />
 
-      {/* 2. Main Workspace Layout */}
+      {/* 2. Real-time KPI Statistics Strip */}
+      <KpiStrip />
+
+      {/* 3. Main Operational Command Center */}
       <div className="flex-1 flex overflow-hidden relative">
-        {/* Left Side Icon Dock */}
+        {/* Left Mini Dock */}
         <MiniDock />
 
-        {/* Dynamic View Switcher */}
-        {activeNavTab === 'operations' && (
-          <div className="flex-1 flex flex-col overflow-hidden relative bg-black">
-            {/* Real-time KPI Statistics Strip matching screenshot */}
-            <KpiStrip />
+        {/* Normal Dashboard Layout */}
+        {activeDockView === 'dashboard' && (
+          <>
+            {/* Fleet Availability Donut Charts & Disruption Console */}
+            <FleetAndAlerts />
 
-            {/* Center Command Area: Left Disruption Panel + Center Globe + Right Flight Card */}
-            <div className="flex-1 flex overflow-hidden relative">
-              {/* Left: Disruption Simulator Panel */}
-              <div className="absolute left-0 top-0 bottom-0 z-20 pointer-events-auto">
-                <SimulateDisruptionPanel />
-              </div>
+            {/* Center: Real-Time Airspace Monitor (Photorealistic Dark Satellite Map) */}
+            <AirspaceView />
 
-              {/* Center: High-Fidelity 3D Night Globe View (India Prominent) */}
-              <div className="absolute inset-0 z-10">
-                <NightGlobeView />
-              </div>
+            {/* Right: Live Flight Schedule Table & AI Dispatcher Recovery Matrix */}
+            <FlightScheduleAndRecovery />
+          </>
+        )}
 
-              {/* Right: Flight Inspector Card */}
-              <div className="absolute right-6 top-4 z-20 pointer-events-auto">
-                <FlightInspectorCard />
-              </div>
+        {/* Focused Airspace Radar View (when Plane icon is clicked in MiniDock) */}
+        {activeDockView === 'airspace' && (
+          <div className="flex-1 relative flex overflow-hidden">
+            <div className="flex-1 relative">
+              <AirspaceView />
             </div>
-
-            {/* Bottom: Milestone Playback Timeline */}
-            <div className="border-t border-[#1A2230] bg-[#0A0D14]/90 backdrop-blur-md">
-              <MilestoneTimeline />
-            </div>
+            <FlightScheduleAndRecovery />
           </div>
         )}
 
-        {/* View 2: Network Operations & Airspace Radar */}
-        {activeNavTab === 'network' && <NetworkView />}
-
-        {/* View 3: AI Dispatcher Recovery & 24h Rotation Gantt */}
-        {activeNavTab === 'recovery' && <RecoveryView />}
-
-        {/* View 4: Domino DNA & Executive Insights */}
-        {activeNavTab === 'insights' && <InsightsView />}
+        {/* Fullscreen Fleet Rotations Gantt (when Calendar icon is clicked in MiniDock) */}
+        {activeDockView === 'gantt' && (
+          <div className="flex-1 flex flex-col overflow-hidden bg-black p-3">
+            <div className="flex items-center justify-between p-2.5 bg-zinc-950 border border-zinc-900 rounded-t-lg text-xs font-mono-numbers">
+              <span className="font-bold text-zinc-200">
+                FULLSCREEN FLEET ROTATIONS GANTT TIMELINE // ALL 16 AIRCRAFT TAILS
+              </span>
+              <button
+                onClick={() => setActiveDockView('dashboard')}
+                className="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 transition"
+              >
+                Close Fullscreen
+              </button>
+            </div>
+            <div className="flex-1 border border-zinc-900 border-t-0 rounded-b-lg overflow-hidden">
+              <GanttTimeline />
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* 3. Global Interactive Modals */}
+      {/* 4. Bottom: Timeline & Resource Allocation Gantt Chart */}
+      {activeDockView !== 'gantt' && <GanttTimeline />}
+
+      {/* 5. Modals & Overlays */}
       <JudgeTourModal />
-      <SettingsModal />
-      <WeatherModal />
+      {isWeatherOpen && <WeatherModal />}
+      {isSettingsOpen && <SettingsModal />}
     </div>
   );
 };

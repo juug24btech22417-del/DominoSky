@@ -19,11 +19,14 @@ export const FlightScheduleAndRecovery: React.FC = () => {
     recoveryOptions,
     appliedRecoveryId,
     applyRecovery,
-    briefing
+    briefing,
+    activeScheduleTab,
+    setActiveScheduleTab
   } = useSimulationStore();
 
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState<'schedule' | 'recovery' | 'dna'>('schedule');
+  const activeTab = activeScheduleTab;
+  const setActiveTab = setActiveScheduleTab;
 
   const formatInr = (val: number) => {
     if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)} Cr`;
